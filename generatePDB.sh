@@ -47,12 +47,6 @@ cat <<-END
 END
 }
 
-if [[ $# -eq 0 ]]; then
-
-    ./generatePDB.sh -h;
-
-    exit 0
-fi
 
 
 output_name=''
@@ -71,13 +65,14 @@ has_alignment_file=false
 num_models=10
 num_threads=1
 
+
 while getopts ho:rd:ea:n:t: opt; do
     case $opt in
         h) show_help; exit 1                               ;;
         o) output_name=$OPTARG; has_output_name=true       ;;
         r) remove_inserts=true                             ;;
         d) database=$OPTARG; has_database=true             ;;
-        e) expand_alignment=true                           ;;
+        e) expand_alignment=true ;                         ;;
         a) alignment_file=$OPTARG; has_alignment_file=true ;;
         n) num_models=$OPTARG                              ;;
         t) num_threads=$OPTARG                             ;;
@@ -87,20 +82,25 @@ done
 shift $(( OPTIND - 1 ))
 input_file=$1
 
+if [[ $# -ne 1 ]]; then
+    show_help; exit 0
+fi
+
 ################################################################################
 ################################## create the msa
 
 if $has_database; then
   true # do nothing
 else
-  database=/auto/share/db/pdb70/pdb70
+  database=/auto/share/db/pfam-2019/pfam
 fi
 
 if $has_output_name; then
   true # do nothing
-else
-  output_name=trr_${input_file}
   # mkdir -r `dirname $output_name`
+else
+  # output_name=trr_${input_file}
+  output_name=`dirname $input_file`/trr_`basename $input_file` # TEST THIS THOROUGHLY; MAY BREAK A LOT OF DOWNSTREAM THINGS
 fi
 
 prod_input=${output_name}.input
